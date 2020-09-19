@@ -1,8 +1,9 @@
-const Express = require('express');
-const app = Express();
-
+const app = require('express')();
 const port = process.env.PORT || 3000;
+const server = app.listen(port, () => console.log(`Server connected to port ${port}`));
 
-app.listen(port, () => {
-    console.log(`Server is online at port ${port}.`);
+const io = require('socket.io').listen(server);
+
+io.on('connection', socket => {
+    socket.emit('login', 'Welcome to the Matrix.');
 });
