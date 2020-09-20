@@ -16,5 +16,10 @@ export default {
 </script>
 
 <style>
-
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #2C3E50;
+    margin: 0;
+    padding: 0;
+  }
 </style>

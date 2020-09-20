@@ -1,10 +1,11 @@
 <template>
-  <div class="hello">
+  <div class="chat">
+    <h1>Current Session</h1>
+    <p>Welcome, {{user}}.</p>
     <p>Placeholder : {{messages}}</p>
-    <p>Welcome, {{username}}</p>
     <input v-model="message" ref="messageInput" placeholder="Type message here.">
     <button @click="sendMessage">Send</button>
-    <p>Online:</p>
+    <p>Online now:{{users}}</p>
 
   </div>
 </template>
@@ -16,28 +17,37 @@ export default {
   data(){
     return {
       socket: {},
-      username: '',
+      user: '',
       message: '',
-      messages: []
+      messages: [],
+      users:[]
     }
   },
   methods: {
-    connect(){
-      this.socket.on('connected', ({messages, users}) => {
+    login(){
+      //log in a user and then load all messages and online users in chat
+      this.listen();
+      this.user = prompt('Please input a username.', `Anon${Math.floor(Math.random() * Math.floor(1337))}`);
+      this.socket.emit('login', this.user);
+    },
+    listen(){
+      this.socket.on('loadUsers', ({users}) => {
         this.users = users;
+      });
+
+      this.socket.on('loadMessages', ({messages}) => {
         this.messages = messages;
       });
-    },
-    login(){
-      this.username = prompt('Please input a username.', `Anon${Math.floor(Math.random() * Math.floor(1337))}`);
-      this.socket.emit('login', this.username);
+      
     },
     sendMessage(){
-      //TODO: need to create an object representing a message (text, user) to send to backend
       if(this.message === ''){
         return;
       }
-      console.log(this.message);
+      this.socket.emit('sendMessage', { 
+          user: this.user,
+          message: this.message
+      });
       this.$refs.messageInput.value = '';
     }
   },
@@ -45,7 +55,6 @@ export default {
     this.socket = io('http://localhost:3000');
   },
   mounted(){
-    this.connect();
     this.login();
   }
 }
@@ -53,4 +62,18 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  .chat {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    max-width: 768px;
+    margin: 0 auto;
+    border: solid 1px black;
+    text-align: center;
+  }
+
+  button, input {
+    margin: 7px auto;
+  }
 </style>
