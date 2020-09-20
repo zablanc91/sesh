@@ -1,27 +1,52 @@
 <template>
   <div class="hello">
-    <p>Placeholder : {{message}}</p>
+    <p>Placeholder : {{messages}}</p>
+    <p>Welcome, {{username}}</p>
+    <input v-model="message" ref="messageInput" placeholder="Type message here.">
+    <button @click="sendMessage">Send</button>
+    <p>Online:</p>
+
   </div>
 </template>
 
 <script>
 import io from 'socket.io-client';
-
 export default {
-  name: 'HelloWorld',
+  name: 'Chatroom',
   data(){
     return {
       socket: {},
-      message: ''
+      username: '',
+      message: '',
+      messages: []
+    }
+  },
+  methods: {
+    connect(){
+      this.socket.on('connected', ({messages, users}) => {
+        this.users = users;
+        this.messages = messages;
+      });
+    },
+    login(){
+      this.username = prompt('Please input a username.', `Anon${Math.floor(Math.random() * Math.floor(1337))}`);
+      this.socket.emit('login', this.username);
+    },
+    sendMessage(){
+      //TODO: need to create an object representing a message (text, user) to send to backend
+      if(this.message === ''){
+        return;
+      }
+      console.log(this.message);
+      this.$refs.messageInput.value = '';
     }
   },
   created(){
     this.socket = io('http://localhost:3000');
   },
   mounted(){
-    this.socket.on('login', (message) => {
-      this.message = message;
-    })
+    this.connect();
+    this.login();
   }
 }
 </script>
